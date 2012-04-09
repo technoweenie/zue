@@ -1,6 +1,9 @@
 # Zue
 
-ZeroMQ Queue.
+ZeroMQ Queue.  Rhymes with "queue".
+
+Loosely based on the ZeroMQ [Freelance protocol](http://rfc.zeromq.org/spec:10).
+Read the [rationale for the Freelance protocol](http://zguide.zeromq.org/page:all#toc86).
 
 ## Servers
 
