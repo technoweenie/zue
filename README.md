@@ -11,7 +11,7 @@ resp = lambda do |job|
 end
 
 server = Zue::Server.new 'tcp://127.0.0.1:5555', resp
-server.receive; server.receive
+server.perform
 ```
 
 ## Clients
