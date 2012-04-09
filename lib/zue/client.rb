@@ -30,8 +30,7 @@ module Zue
       @servers.each do |address|
         @socket.send_strings([address, ccf, PING])
       end
-      client, ccf, *extra = receive_from_ccf(ccf)
-      client
+      receive_from_ccf(ccf).first
     end
 
     def receive_from_ccf(ccf)
