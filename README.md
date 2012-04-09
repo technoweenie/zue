@@ -5,12 +5,12 @@ ZeroMQ Queue.
 ## Servers
 
 ```ruby
-resp = lambda do |job|
+handler = lambda do |job|
   puts job.ccf
-  puts job.messages.join(", ")
+  puts job.body
 end
 
-server = Zue::Server.new 'tcp://127.0.0.1:5555', resp
+server = Zue::Server.new 'tcp://127.0.0.1:5555', handler
 server.perform
 ```
 
