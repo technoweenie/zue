@@ -4,8 +4,7 @@ module Zue
   class Client
     attr_reader :address, :socket
 
-    def initialize(address, context = nil)
-      @context = context || Zue.context
+    def initialize(address)
       @socket = build_socket(address)
     end
 
@@ -21,7 +20,7 @@ module Zue
 
     # Public
     def build_socket(address, socket_type)
-      socket = @context.socket(socket_type)
+      socket = Zue.context.socket(socket_type)
       socket.identity = address
       socket
     end

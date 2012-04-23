@@ -23,11 +23,9 @@ module Zue
     #
     # address - An accessible String ZMQ address.
     # handler - Optional Block handler.
-    # context - Optional ZMQ::Context.
     #
-    def initialize(address, handler = nil, context = Zue.context)
+    def initialize(address, handler = nil)
       @address = address
-      @context = context
       @handler = handler || (block_given? ? Proc.new : nil)
       @socket = build_socket(address)
     end
@@ -86,7 +84,7 @@ module Zue
 
     # Public
     def build_socket(address, type)
-      @socket = @context.socket(type)
+      @socket = Zue.context.socket(type)
       @socket.identity = address
       rc = @socket.bind address
 
