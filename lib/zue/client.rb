@@ -2,13 +2,51 @@ require File.expand_path("../../zue", __FILE__)
 
 module Zue
   class Client
-    attr_reader :socket, :servers, :ccf
+    attr_reader :socket
 
-    def initialize(ccf = IncrementingControlFrame.new, context = Zue.context)
-      @context = context
-      @socket = context.socket(ZMQ::ROUTER)
+    def initialize(address, ccf = nil, context = nil)
+      @context = context || Zue.context
+      @socket = build_socket(address)
+    end
+
+    # Public
+    def add_server(address)
+      @socket.connect(address)
+    end
+
+    # Public
+    def deliver(*messages)
+      @socket.send_strings(messages)
+    end
+
+    # Public
+    def build_socket(address, socket_type)
+      socket = @context.socket(socket_type)
+      socket.identity = address
+      socket
+    end
+
+    # Public
+    def close
+      @socket.close
+    end
+  end
+
+  # Simple client using a ZeroMQ PUSH socket to distribute jobs to a set of
+  # PULL servers using simple Fair Queueing.
+  class PushClient < Client
+    def build_socket(address)
+      super(address, ZMQ::PUSH)
+    end
+  end
+
+  # Experimental client using a ROUTER sockets and the Freelance pattern.
+  class FreelanceClient < Client
+    attr_reader :servers, :ccf
+    def initialize(address, ccf = nil, context = nil)
+      super(address, context)
+      @ccf = ccf || IncrementingControlFrame.new
       @servers = []
-      @ccf = ccf
     end
 
     # Public
@@ -24,23 +62,28 @@ module Zue
       request server, ccf, messages
     end
 
-    # Internal
+    # Public
+    def build_socket(address)
+      super(address, ZMQ::ROUTER)
+    end
+
     def request(server, ccf, messages)
       @socket.send_strings([server, ccf, *messages])
     end
 
-    # Internal
     def ping(ccf)
       @servers.each do |address|
+        puts "SENDING #{address.inspect} #{ccf.inspect}"
         @socket.send_strings([address, ccf, PING])
       end
       receive_from_ccf(ccf).first
     end
 
-    # Internal
     def receive_from_ccf(ccf)
       loop do
-        @socket.recv_strings(list = [])
+        puts 'loopy loopy'
+        rc = @socket.recv_strings(list = [])
+        puts "RC: #{rc.inspect} // #{list.inspect}"
         return list if list[1] == ccf
       end
     end
