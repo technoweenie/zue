@@ -1,17 +1,18 @@
-require 'test/unit'
+require File.expand_path("../helper", __FILE__)
 require File.expand_path("../../lib/zue/server", __FILE__)
 
-class ZueServerTest < Test::Unit::TestCase
-  def setup
+class ZueServerTest < ZueTest
+  setup_once do
     @address = "ipc://server-test"
     @server = Zue::Server.new(@address)
-    @socket = Zue.context.socket(ZMQ::ROUTER)
 
+    @socket = Zue.context.socket(ZMQ::ROUTER)
+    @socket.identity = 'server-test-worker'
     @socket.connect @address
-    sleep 0.2
+    sleep 0.5
   end
 
-  def teardown
+  teardown_once do
     @server.close
     @socket.close
   end
