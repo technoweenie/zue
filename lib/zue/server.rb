@@ -62,17 +62,19 @@ module Zue
     # Returns nothing.
     def receive
       rc = @socket.recv_strings(list = [])
-      if ZMQ::Util.resultcode_ok?(rc)
-        client = list.shift
-        ccf = list.shift
-        if list[0] == PING
-          handle_ping(client, ccf)
-        else
-          job = Job.new(client, ccf, list)
-          handle_job(job)
-        end
-      else
+      if !ZMQ::Util.resultcode_ok?(rc)
         puts ZMQ::Util.error_string
+        return
+      end
+
+      client = list.shift
+      ccf = list.shift
+
+      if list[0] == PING
+        handle_ping(client, ccf)
+      else
+        job = Job.new(client, ccf, list)
+        handle_job(job)
       end
     end
 

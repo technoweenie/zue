@@ -11,21 +11,25 @@ module Zue
       @ccf = ccf
     end
 
+    # Public
     def add_server(address)
       @socket.connect address
       @servers << address
     end
 
+    # Public
     def deliver(*messages)
       ccf = @ccf.next
       server = ping(ccf)
       request server, ccf, messages
     end
 
+    # Internal
     def request(server, ccf, messages)
       @socket.send_strings([server, ccf, *messages])
     end
 
+    # Internal
     def ping(ccf)
       @servers.each do |address|
         @socket.send_strings([address, ccf, PING])
@@ -33,6 +37,7 @@ module Zue
       receive_from_ccf(ccf).first
     end
 
+    # Internal
     def receive_from_ccf(ccf)
       loop do
         @socket.recv_strings(list = [])
@@ -45,6 +50,7 @@ module Zue
         @num = 0
       end
 
+      # Public
       def next
         (@num += 1).to_s
       end

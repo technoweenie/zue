@@ -10,7 +10,8 @@ Read the [rationale for the Freelance protocol](http://zguide.zeromq.org/page:al
 ```ruby
 handler = lambda do |job|
   puts job.ccf
-  puts job.body
+  job.messages.each { |msg| puts msg }
+  puts
 end
 
 server = Zue::Server.new 'tcp://127.0.0.1:5555', handler
