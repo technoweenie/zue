@@ -1,10 +1,10 @@
 require File.expand_path("../../helper", __FILE__)
-require File.expand_path("../../../lib/zue/server", __FILE__)
+require File.expand_path("../../../lib/zue/freelance/server", __FILE__)
 
 class ZueFreelanceServerTest < ZueTest
   setup_once do
     @address = "ipc://server-test"
-    @server = Zue::Server.new(@address)
+    @server = Zue::FreelanceServer.new(@address)
 
     @socket = Zue.context.socket(ZMQ::ROUTER)
     @socket.identity = 'server-test-worker'

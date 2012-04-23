@@ -32,14 +32,6 @@ module Zue
     end
   end
 
-  # Simple client using a ZeroMQ PUSH socket to distribute jobs to a set of
-  # PULL servers using simple Fair Queueing.
-  class PushClient < Client
-    def build_socket(address)
-      super(address, ZMQ::PUSH)
-    end
-  end
-
   # Experimental client using a ROUTER sockets and the Freelance pattern.
   class FreelanceClient < Client
     attr_reader :servers, :ccf

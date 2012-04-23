@@ -29,9 +29,7 @@ module Zue
       @address = address
       @context = context
       @handler = handler || (block_given? ? Proc.new : nil)
-      @socket = context.socket(ZMQ::ROUTER)
-      @socket.identity = address
-      @socket.bind address
+      @socket = build_socket(address)
     end
 
     # Public: Gets the public address of the server socket.
@@ -62,20 +60,21 @@ module Zue
     # Returns nothing.
     def receive
       rc = @socket.recv_strings(list = [])
-      if !ZMQ::Util.resultcode_ok?(rc)
-        puts ZMQ::Util.error_string
-        return
-      end
 
-      client = list.shift
-      ccf = list.shift
-
-      if list[0] == PING
-        handle_ping(client, ccf)
+      if ZMQ::Util.resultcode_ok?(rc)
+        receive_message(list)
       else
-        job = Job.new(client, ccf, list)
-        handle_job(job)
+        puts ZMQ::Util.error_string
       end
+    end
+
+    # Public: Passes the job to the server's handler.
+    #
+    # job - A Zue::Job.
+    #
+    # Returns nothing.
+    def handle_job(job)
+      @handler.call job
     end
 
     # Public: Closes the ZMQ Socket.
@@ -85,23 +84,18 @@ module Zue
       @socket.close
     end
 
-    # Responds to a ping.
-    #
-    # client - String ZMQ identity for the client socket.
-    # ccf    - The String client control frame.
-    #
-    # Returns nothing.
-    def handle_ping(client, ccf)
-      @socket.send_strings [client, ccf, PONG]
-    end
+    # Public
+    def build_socket(address, type)
+      @socket = @context.socket(type)
+      @socket.identity = address
+      rc = @socket.bind address
 
-    # Passes the job to the server's handler.
-    #
-    # job - A Zue::Job.
-    #
-    # Returns nothing.
-    def handle_job(job)
-      @handler.call job
+      if !ZMQ::Util.resultcode_ok?(rc)
+        puts ZMQ::Util.error_string
+        return
+      end
+
+      @socket
     end
   end
 end
