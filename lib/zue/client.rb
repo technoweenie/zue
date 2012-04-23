@@ -2,7 +2,7 @@ require File.expand_path("../../zue", __FILE__)
 
 module Zue
   class Client
-    attr_reader :socket
+    attr_reader :address, :socket
 
     def initialize(address, context = nil)
       @context = context || Zue.context
