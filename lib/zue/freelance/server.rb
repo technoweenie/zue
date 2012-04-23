@@ -2,6 +2,8 @@ require File.expand_path("../../server", __FILE__)
 
 module Zue
   class FreelanceServer < Server
+    Job = Struct.new(:sender, :ccf, :messages)
+
     # Public
     def build_socket(address)
       super(address, ZMQ::ROUTER)
@@ -15,8 +17,7 @@ module Zue
       if list[0] == PING
         handle_ping(client, ccf)
       else
-        job = Job.new(client, ccf, list)
-        handle_job(job)
+        handle_job(Job.new(client, ccf, list))
       end
     end
 

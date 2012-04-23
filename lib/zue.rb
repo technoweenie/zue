@@ -7,7 +7,5 @@ module Zue
 
   PING = 'PING'.freeze
   PONG = 'PONG'.freeze
-
-  Job = Struct.new(:server, :ccf, :messages)
 end
 
