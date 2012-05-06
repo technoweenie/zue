@@ -27,17 +27,14 @@ module Zue
     def initialize(address, handler = nil)
       @address = address
       @handler = handler || (block_given? ? Proc.new : nil)
-      @socket = build_socket(address)
+      @socket = nil
+      @running = @closing = false
     end
 
-    # Public: Gets the public address of the server socket.
-    #
-    # Returns a String ZMQ address.
+    # Public: Returns the String public address of the server socket.
     attr_reader :address
 
-    # Public: Gets the ZMQ Router socket for the server.
-    #
-    # Returns a ZMQ::Socket.
+    # Public: Returns the Router ZMQ::Socket for the server.
     attr_reader :socket
 
     # Public: Gets or sets the block that handles incoming requests.
@@ -50,19 +47,25 @@ module Zue
     #
     # Returns nothing.
     def perform
-      loop { receive }
+      @running = true
+      while @running
+        receive
+      end
+      close if @closing
     end
 
     # Public: Blocks until a message is received, and handles it.
     #
     # Returns nothing.
     def receive
-      rc = @socket.recv_strings(list = [])
+      flags = (@closing || !@running) ? 1 : 0
+      rc = socket.recv_strings(list = [], flags)
 
       if ZMQ::Util.resultcode_ok?(rc)
         receive_message(list)
       else
-        puts ZMQ::Util.error_string
+        puts "ZMQ ERROR: #{ZMQ::Util.error_string}"
+        @running = false
       end
     end
 
@@ -79,21 +82,32 @@ module Zue
     #
     # Returns nothing.
     def close
-      @socket.close
+      @closing = true
+      if !@running && @socket
+        @socket.close
+        @socket = nil
+        @closing = false
+      end
+      true
     end
 
-    # Public
+    # Internal
+    def socket
+      @socket ||= build_socket(@address)
+    end
+
+    # Internal
     def build_socket(address, type)
-      @socket = Zue.context.socket(type)
-      @socket.identity = address
-      rc = @socket.bind address
+      socket = Zue.context.socket(type)
+      socket.identity = address
+      rc = socket.bind address
 
       if !ZMQ::Util.resultcode_ok?(rc)
         puts ZMQ::Util.error_string
         return
       end
 
-      @socket
+      socket
     end
   end
 end

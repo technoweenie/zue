@@ -23,7 +23,7 @@ server.perform
 ```ruby
 client = Zue::Client.new
 client.add_server 'tcp://127.0.0.1:5555'
-client.add_server 'tcp://127.0.0.1:5556'
+#client.add_server 'tcp://127.0.0.1:5556'
 
 client.deliver "abc"
 ```
